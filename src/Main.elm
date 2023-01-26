@@ -58,13 +58,17 @@ update msg model =
             ( { model | search = string }, Cmd.none )
 
         Submit ->
-            ( { model
-                | beers = Dict.empty
-                , loadingFirstPage = True
-                , page = 1
-              }
-            , Cmd.batch [ getBeers model.search 1, getBeers model.search 2 ]
-            )
+            if model.search == "" then
+                ( model, Cmd.none )
+
+            else
+                ( { model
+                    | beers = Dict.empty
+                    , loadingFirstPage = True
+                    , page = 1
+                  }
+                , Cmd.batch [ getBeers model.search 1, getBeers model.search 2 ]
+                )
 
         GetPage page ->
             ( { model | page = page }
@@ -124,7 +128,7 @@ searchForm model =
             , placeholder "Search beers"
             ]
             []
-        , button [] [ text "Search" ]
+        , button [ disabled (model.search == "") ] [ text "Search" ]
         ]
 
 

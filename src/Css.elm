@@ -11,11 +11,26 @@ h1{
     margin-top:0;
 }
 input{
-    padding:5px;
+    padding:10px;
+    background:white;
+    border-radius:5px;
+    border:none;
+    box-shadow:1px 1px 4px inset rgba(0,0,0,0.3)
 }
 button{
-    padding:5px 15px;
-    margin:0px 5px;
+    padding:10px 20px;
+    margin:0px 10px;
+    background:white;
+    border-radius:5px;
+    border:none;
+    box-shadow:1px 2px 4px rgba(0,0,0,0.3), -1px -2px 3px inset rgba(0,0,0,0.1);
+    cursor:pointer;
+}
+button:active{
+    box-shadow:1px 1px 3px inset rgba(0,0,0,0.3)
+}
+button:disabled{
+    pointer-events:none;
 }
 .form{
     display:flex;
@@ -46,10 +61,10 @@ beerList > div:not(:last-child){
     border-bottom:1px solid #ddd;
 }
 .beerList > div:hover{
-    background:#f3f3f3;
+    box-shadow:1px 2px 4px rgba(0,0,0,0.3), -1px -2px 3px inset rgba(0,0,0,0.1);
 }
 .beerList >div.selected{
-    background:#b7e0f0;
+    box-shadow:1px 1px 4px inset rgba(0,0,0,0.3)
 }
 .details {
     width:600px;
