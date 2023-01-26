@@ -41,13 +41,6 @@ describe('ApoEx Beer Search', () => {
     cy.get('#nextPage').click()
     cy.get('.beerList').contains('Sorachi Ace')
   })
-
-  it('Shows loading next page message', () => {
-    cy.get('#searchForm input').type('a')
-    cy.get('#searchForm button').click()
-    cy.get('#nextPage').click()
-    cy.get('body').contains('Loading...')
-  })
   
   it('can go to previous page', () => {
     cy.get('#searchForm input').type('a')
@@ -71,12 +64,5 @@ describe('ApoEx Beer Search', () => {
     cy.get('#nextPage').click()
     cy.get('#nextPage[disabled]')
   })
-
-  it('shows no more beers matching your search message', () => {
-    cy.get('#searchForm input').type('hello')
-    cy.get('#searchForm button').click()
-    cy.get('#nextPage').click()
-    cy.get('#nextPage').click()
-    cy.get('body').contains('Found no more beers matching your search')
-  })
+  
 })

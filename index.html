@@ -6208,7 +6208,12 @@ var $author$project$Main$update = F2(
 					_Utils_update(
 						model,
 						{beers: $elm$core$Dict$empty, loadingFirstPage: true, page: 1}),
-					A2($author$project$Main$getBeers, model.search, 1));
+					$elm$core$Platform$Cmd$batch(
+						_List_fromArray(
+							[
+								A2($author$project$Main$getBeers, model.search, 1),
+								A2($author$project$Main$getBeers, model.search, 2)
+							])));
 			case 'GetPage':
 				var page = msg.a;
 				return _Utils_Tuple2(
@@ -6216,11 +6221,11 @@ var $author$project$Main$update = F2(
 						model,
 						{page: page}),
 					function () {
-						var _v1 = A2($elm$core$Dict$get, page, model.beers);
+						var _v1 = A2($elm$core$Dict$get, page + 1, model.beers);
 						if ((_v1.$ === 'Just') && (_v1.a.$ === 'Ok')) {
 							return $elm$core$Platform$Cmd$none;
 						} else {
-							return A2($author$project$Main$getBeers, model.search, page);
+							return A2($author$project$Main$getBeers, model.search, page + 1);
 						}
 					}());
 			case 'GotBeers':
@@ -6252,15 +6257,6 @@ var $author$project$Main$SetSelected = function (a) {
 	return {$: 'SetSelected', a: a};
 };
 var $author$project$Main$Submit = {$: 'Submit'};
-var $elm$core$Maybe$andThen = F2(
-	function (callback, maybeValue) {
-		if (maybeValue.$ === 'Just') {
-			var value = maybeValue.a;
-			return callback(value);
-		} else {
-			return $elm$core$Maybe$Nothing;
-		}
-	});
 var $elm$html$Html$button = _VirtualDom_node('button');
 var $elm$json$Json$Encode$string = _Json_wrap;
 var $elm$html$Html$Attributes$stringProperty = F2(
@@ -6310,24 +6306,11 @@ var $elm$html$Html$Attributes$tabindex = function (n) {
 };
 var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
-var $elm$core$Result$toMaybe = function (result) {
-	if (result.$ === 'Ok') {
-		var v = result.a;
-		return $elm$core$Maybe$Just(v);
-	} else {
-		return $elm$core$Maybe$Nothing;
-	}
-};
-var $elm$core$Maybe$withDefault = F2(
-	function (_default, maybe) {
-		if (maybe.$ === 'Just') {
-			var value = maybe.a;
-			return value;
-		} else {
-			return _default;
-		}
-	});
 var $author$project$Main$beerList = function (model) {
+	var nextPageIsEmpty = _Utils_eq(
+		A2($elm$core$Dict$get, model.page + 1, model.beers),
+		$elm$core$Maybe$Just(
+			$elm$core$Result$Ok(_List_Nil)));
 	return A2(
 		$elm$html$Html$div,
 		_List_Nil,
@@ -6362,15 +6345,7 @@ var $author$project$Main$beerList = function (model) {
 							[
 								$elm$html$Html$Events$onClick(
 								$author$project$Main$GetPage(model.page + 1)),
-								$elm$html$Html$Attributes$disabled(
-								$elm$core$List$length(
-									A2(
-										$elm$core$Maybe$withDefault,
-										_List_Nil,
-										A2(
-											$elm$core$Maybe$andThen,
-											$elm$core$Result$toMaybe,
-											A2($elm$core$Dict$get, model.page, model.beers)))) < 10),
+								$elm$html$Html$Attributes$disabled(nextPageIsEmpty),
 								$elm$html$Html$Attributes$id('nextPage')
 							]),
 						_List_fromArray(
@@ -6417,58 +6392,71 @@ var $author$project$Main$beerList = function (model) {
 										]))
 								]));
 					} else {
-						if (!_v0.a.a.b) {
-							return $elm$html$Html$text('Found no more beers matching your search');
-						} else {
-							var beers = _v0.a.a;
-							return A2(
-								$elm$html$Html$div,
-								_List_fromArray(
-									[
-										$elm$html$Html$Attributes$class('beerList')
-									]),
-								A2(
-									$elm$core$List$map,
-									function (beer) {
-										return A2(
-											$elm$html$Html$div,
-											_List_fromArray(
-												[
-													$elm$html$Html$Events$onClick(
-													$author$project$Main$SetSelected(beer.id)),
-													$elm$html$Html$Attributes$tabindex(0),
-													$elm$html$Html$Attributes$class(
-													_Utils_eq(
-														model.detailsId,
-														$elm$core$Maybe$Just(beer.id)) ? 'selected' : '')
-												]),
-											_List_fromArray(
-												[
-													A2(
-													$elm$html$Html$div,
-													_List_Nil,
-													_List_fromArray(
-														[
-															$elm$html$Html$text(beer.name)
-														])),
-													A2(
-													$elm$html$Html$div,
-													_List_Nil,
-													_List_fromArray(
-														[
-															$elm$html$Html$text(
-															$elm$core$String$fromFloat(beer.abv) + '%')
-														]))
-												]));
-									},
-									beers));
-						}
+						var beers = _v0.a.a;
+						return A2(
+							$elm$html$Html$div,
+							_List_Nil,
+							_List_fromArray(
+								[
+									A2(
+									$elm$html$Html$div,
+									_List_fromArray(
+										[
+											$elm$html$Html$Attributes$class('beerList')
+										]),
+									A2(
+										$elm$core$List$map,
+										function (beer) {
+											return A2(
+												$elm$html$Html$div,
+												_List_fromArray(
+													[
+														$elm$html$Html$Events$onClick(
+														$author$project$Main$SetSelected(beer.id)),
+														$elm$html$Html$Attributes$tabindex(0),
+														$elm$html$Html$Attributes$class(
+														_Utils_eq(
+															model.detailsId,
+															$elm$core$Maybe$Just(beer.id)) ? 'selected' : '')
+													]),
+												_List_fromArray(
+													[
+														A2(
+														$elm$html$Html$div,
+														_List_Nil,
+														_List_fromArray(
+															[
+																$elm$html$Html$text(beer.name)
+															])),
+														A2(
+														$elm$html$Html$div,
+														_List_Nil,
+														_List_fromArray(
+															[
+																$elm$html$Html$text(
+																$elm$core$String$fromFloat(beer.abv) + '%')
+															]))
+													]));
+										},
+										beers)),
+									nextPageIsEmpty ? A2(
+									$elm$html$Html$div,
+									_List_fromArray(
+										[
+											A2($elm$html$Html$Attributes$style, 'padding', '5px 10px'),
+											A2($elm$html$Html$Attributes$style, 'color', '#aaa')
+										]),
+									_List_fromArray(
+										[
+											$elm$html$Html$text('No more beers matching your search')
+										])) : $elm$html$Html$text('')
+								]));
 					}
 				}
 			}()
 			]));
 };
-var $author$project$Main$css = '\r\n    body{\r\n        font-family:sans-serif;\r\n    }\r\n    h1{\r\n        margin-top:0;\r\n    }\r\n    input{\r\n        padding:5px;\r\n    }\r\n    button{\r\n        padding:5px 15px;\r\n        margin:0px 5px;\r\n    }\r\n    .form{\r\n        display:flex;\r\n        justify-content:center;\r\n        padding:20px;\r\n    }\r\n    .panels {\r\n        display:flex;\r\n        justify-content:center;\r\n    }\r\n    .pagination{\r\n        display:flex;\r\n        justify-content:center;\r\n        align-items:center;\r\n        margin-bottom:10px;\r\n    }\r\n    .beerList > div{\r\n        width:300px;\r\n        padding:5px 10px;\r\n        display:flex;\r\n        justify-content:space-between;\r\n        cursor:pointer;\r\n        border-radius:5px;\r\n        white-space:no-wrap;\r\n        text-overflow: ellipsis\r\n    }\r\n    beerList > div:not(:last-child){\r\n        border-bottom:1px solid #ddd;\r\n    }\r\n    .beerList > div:hover{\r\n        background:#f3f3f3;\r\n    }\r\n    .beerList >div.selected{\r\n        background:#b7e0f0;\r\n    }\r\n    .details {\r\n        width:600px;\r\n        margin-left:20px;\r\n        display:flex;\r\n    }\r\n    .bottle {\r\n        height:300px;\r\n        margin-left:20px;\r\n    }\r\n    ';
+var $author$project$Css$css = '\r\nbody{\r\n    font-family:sans-serif;\r\n}\r\nh1{\r\n    margin-top:0;\r\n}\r\ninput{\r\n    padding:5px;\r\n}\r\nbutton{\r\n    padding:5px 15px;\r\n    margin:0px 5px;\r\n}\r\n.form{\r\n    display:flex;\r\n    justify-content:center;\r\n    padding:20px;\r\n}\r\n.panels {\r\n    display:flex;\r\n    justify-content:center;\r\n}\r\n.pagination{\r\n    display:flex;\r\n    justify-content:center;\r\n    align-items:center;\r\n    margin-bottom:10px;\r\n}\r\n.beerList > div{\r\n    width:300px;\r\n    padding:5px 10px;\r\n    display:flex;\r\n    justify-content:space-between;\r\n    cursor:pointer;\r\n    border-radius:5px;\r\n    white-space:no-wrap;\r\n    text-overflow: ellipsis\r\n}\r\nbeerList > div:not(:last-child){\r\n    border-bottom:1px solid #ddd;\r\n}\r\n.beerList > div:hover{\r\n    background:#f3f3f3;\r\n}\r\n.beerList >div.selected{\r\n    background:#b7e0f0;\r\n}\r\n.details {\r\n    width:600px;\r\n    margin-left:20px;\r\n    display:flex;\r\n}\r\n.bottle {\r\n    height:300px;\r\n    margin-left:20px;\r\n}\r\n    ';
 var $elm$html$Html$b = _VirtualDom_node('b');
 var $elm$core$List$append = F2(
 	function (xs, ys) {
@@ -6512,6 +6500,14 @@ var $elm$html$Html$Attributes$src = function (url) {
 		$elm$html$Html$Attributes$stringProperty,
 		'src',
 		_VirtualDom_noJavaScriptOrHtmlUri(url));
+};
+var $elm$core$Result$toMaybe = function (result) {
+	if (result.$ === 'Ok') {
+		var v = result.a;
+		return $elm$core$Maybe$Just(v);
+	} else {
+		return $elm$core$Maybe$Nothing;
+	}
 };
 var $elm$html$Html$ul = _VirtualDom_node('ul');
 var $elm$core$Dict$values = function (dict) {
@@ -6730,7 +6726,7 @@ var $author$project$Main$view = function (model) {
 				_List_Nil,
 				_List_fromArray(
 					[
-						$elm$html$Html$text($author$project$Main$css)
+						$elm$html$Html$text($author$project$Css$css)
 					])),
 				$author$project$Main$searchForm(model),
 				A2(

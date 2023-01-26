@@ -63,17 +63,17 @@ update msg model =
                 , loadingFirstPage = True
                 , page = 1
               }
-            , getBeers model.search 1
+            , Cmd.batch [ getBeers model.search 1, getBeers model.search 2 ]
             )
 
         GetPage page ->
             ( { model | page = page }
-            , case Dict.get page model.beers of
+            , case Dict.get (page + 1) model.beers of
                 Just (Ok _) ->
                     Cmd.none
 
                 _ ->
-                    getBeers model.search page
+                    getBeers model.search (page + 1)
             )
 
         GotBeers page result ->
@@ -130,6 +130,10 @@ searchForm model =
 
 beerList : Model -> Html Msg
 beerList model =
+    let
+        nextPageIsEmpty =
+            Dict.get (model.page + 1) model.beers == Just (Ok [])
+    in
     div []
         [ div [ class "pagination" ]
             [ button
@@ -141,14 +145,7 @@ beerList model =
             , text (String.fromInt model.page)
             , button
                 [ onClick (GetPage (model.page + 1))
-                , disabled
-                    ((Dict.get model.page model.beers
-                        |> Maybe.andThen Result.toMaybe
-                        |> Maybe.withDefault []
-                        |> List.length
-                     )
-                        < 10
-                    )
+                , disabled nextPageIsEmpty
                 , id "nextPage"
                 ]
                 [ text ">" ]
@@ -163,30 +160,34 @@ beerList model =
                     , button [ onClick Submit ] [ text "Try again" ]
                     ]
 
-            Just (Ok []) ->
-                text "Found no more beers matching your search"
-
             Just (Ok beers) ->
-                div [ class "beerList" ]
-                    (List.map
-                        (\beer ->
-                            div
-                                [ onClick (SetSelected beer.id)
-                                , tabindex 0
-                                , class
-                                    (if model.detailsId == Just beer.id then
-                                        "selected"
+                div []
+                    [ div [ class "beerList" ]
+                        (List.map
+                            (\beer ->
+                                div
+                                    [ onClick (SetSelected beer.id)
+                                    , tabindex 0
+                                    , class
+                                        (if model.detailsId == Just beer.id then
+                                            "selected"
 
-                                     else
-                                        ""
-                                    )
-                                ]
-                                [ div [] [ text beer.name ]
-                                , div [] [ text (String.fromFloat beer.abv ++ "%") ]
-                                ]
+                                         else
+                                            ""
+                                        )
+                                    ]
+                                    [ div [] [ text beer.name ]
+                                    , div [] [ text (String.fromFloat beer.abv ++ "%") ]
+                                    ]
+                            )
+                            beers
                         )
-                        beers
-                    )
+                    , if nextPageIsEmpty then
+                        div [ style "padding" "5px 10px", style "color" "#aaa" ] [ text "No more beers matching your search" ]
+
+                      else
+                        text ""
+                    ]
         ]
 
 
