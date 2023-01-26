@@ -13,7 +13,8 @@ import List.Extra as List
 
 
 type alias Model =
-    { search : String
+    { searchInput : String
+    , search : String
     , beers : Dict Int (Result Http.Error (List Beer))
     , loadingFirstPage : Bool
     , page : Int
@@ -41,7 +42,8 @@ main =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { search = ""
+    ( { searchInput = ""
+      , search = ""
       , beers = Dict.empty
       , loadingFirstPage = False
       , page = 1
@@ -55,23 +57,24 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         SetSearch string ->
-            ( { model | search = string }, Cmd.none )
+            ( { model | searchInput = string }, Cmd.none )
 
         Submit ->
-            if model.search == "" then
+            if model.searchInput == "" then
                 ( model, Cmd.none )
 
             else
                 ( { model
-                    | beers = Dict.empty
+                    | search = model.searchInput
+                    , beers = Dict.empty
                     , loadingFirstPage = True
                     , page = 1
                   }
-                , Cmd.batch [ getBeers model.search 1, getBeers model.search 2 ]
+                , Cmd.batch [ getBeers model.searchInput 1, getBeers model.searchInput 2 ]
                 )
 
         GetPage page ->
-            ( { model | page = page }
+            ( { model | page = page, searchInput = model.search }
             , case Dict.get (page + 1) model.beers of
                 Just (Ok _) ->
                     Cmd.none
@@ -124,11 +127,11 @@ searchForm model =
     Html.form [ onSubmit Submit, class "form", id "searchForm" ]
         [ input
             [ onInput SetSearch
-            , value model.search
+            , value model.searchInput
             , placeholder "Search beers"
             ]
             []
-        , button [ disabled (model.search == "") ] [ text "Search" ]
+        , button [ disabled (model.searchInput == "") ] [ text "Search" ]
         ]
 
 
@@ -149,7 +152,7 @@ beerList model =
             , text (String.fromInt model.page)
             , button
                 [ onClick (GetPage (model.page + 1))
-                , disabled nextPageIsEmpty
+                , disabled (nextPageIsEmpty || Dict.get (model.page + 1) model.beers == Nothing)
                 , id "nextPage"
                 ]
                 [ text ">" ]

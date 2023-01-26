@@ -5354,7 +5354,7 @@ var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
 var $author$project$Main$init = function (_v0) {
 	return _Utils_Tuple2(
-		{beers: $elm$core$Dict$empty, detailsId: $elm$core$Maybe$Nothing, loadingFirstPage: false, page: 1, search: ''},
+		{beers: $elm$core$Dict$empty, detailsId: $elm$core$Maybe$Nothing, loadingFirstPage: false, page: 1, search: '', searchInput: ''},
 		$elm$core$Platform$Cmd$none);
 };
 var $elm$core$Platform$Sub$batch = _Platform_batch;
@@ -6201,18 +6201,18 @@ var $author$project$Main$update = F2(
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
-						{search: string}),
+						{searchInput: string}),
 					$elm$core$Platform$Cmd$none);
 			case 'Submit':
-				return (model.search === '') ? _Utils_Tuple2(model, $elm$core$Platform$Cmd$none) : _Utils_Tuple2(
+				return (model.searchInput === '') ? _Utils_Tuple2(model, $elm$core$Platform$Cmd$none) : _Utils_Tuple2(
 					_Utils_update(
 						model,
-						{beers: $elm$core$Dict$empty, loadingFirstPage: true, page: 1}),
+						{beers: $elm$core$Dict$empty, loadingFirstPage: true, page: 1, search: model.searchInput}),
 					$elm$core$Platform$Cmd$batch(
 						_List_fromArray(
 							[
-								A2($author$project$Main$getBeers, model.search, 1),
-								A2($author$project$Main$getBeers, model.search, 2)
+								A2($author$project$Main$getBeers, model.searchInput, 1),
+								A2($author$project$Main$getBeers, model.searchInput, 2)
 							])));
 			case 'GetPage':
 				var page = msg.a;
@@ -6345,7 +6345,10 @@ var $author$project$Main$beerList = function (model) {
 							[
 								$elm$html$Html$Events$onClick(
 								$author$project$Main$GetPage(model.page + 1)),
-								$elm$html$Html$Attributes$disabled(nextPageIsEmpty),
+								$elm$html$Html$Attributes$disabled(
+								nextPageIsEmpty || _Utils_eq(
+									A2($elm$core$Dict$get, model.page + 1, model.beers),
+									$elm$core$Maybe$Nothing)),
 								$elm$html$Html$Attributes$id('nextPage')
 							]),
 						_List_fromArray(
@@ -6701,7 +6704,7 @@ var $author$project$Main$searchForm = function (model) {
 				_List_fromArray(
 					[
 						$elm$html$Html$Events$onInput($author$project$Main$SetSearch),
-						$elm$html$Html$Attributes$value(model.search),
+						$elm$html$Html$Attributes$value(model.searchInput),
 						$elm$html$Html$Attributes$placeholder('Search beers')
 					]),
 				_List_Nil),
@@ -6709,7 +6712,7 @@ var $author$project$Main$searchForm = function (model) {
 				$elm$html$Html$button,
 				_List_fromArray(
 					[
-						$elm$html$Html$Attributes$disabled(model.search === '')
+						$elm$html$Html$Attributes$disabled(model.searchInput === '')
 					]),
 				_List_fromArray(
 					[
